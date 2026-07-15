@@ -9,3 +9,4 @@ export default defineConfig({
     react()],
   base: '/Philosopering/',
 })
+//elemento nuevo//

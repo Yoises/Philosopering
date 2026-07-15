@@ -28,37 +28,27 @@ const ChatRoom = ({ philosopher, onBack }: ChatRoomProps) => {
     setInput("");
 
     // Llamar a la IA
-    try {
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-4o-mini", // o el modelo que tengas disponible
-          messages: [
-            {
-              role: "system",
-              content: `You are ${philosopher}, speaking with the tone, vocabulary, and reasoning typical of their philosophy.`,
-            },
-            ...newMessages,
-          ],
-        }),
-      });
+   try {
+  const response = await fetch("/api/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      philosopher,
+      messages: newMessages,
+    }),
+  });
 
-      const data = await response.json();
-      const aiMessage = data.choices?.[0]?.message?.content || "…";
+  const data = await response.json();
+  const aiMessage = data.choices?.[0]?.message?.content || "…";
 
-      setMessages([...newMessages, { role: "assistant" as const, content: aiMessage }]);
-    } catch (error) {
-      console.error(error);
-      setMessages([
-        ...newMessages,
-        { role: "assistant", content: "⚠️ I couldn't respond right now." },
-      ]);
-    }
-  };
+  setMessages([...newMessages, { role: "assistant" as const, content: aiMessage }]);
+} catch (error) {
+  console.error(error);
+  setMessages([
+    ...newMessages,
+    { role: "assistant", content: "⚠️ I couldn't respond right now." },
+  ]);
+}
 
   return (
     <div className="flex flex-col h-screen bg-[#fdfaf6] relative">
