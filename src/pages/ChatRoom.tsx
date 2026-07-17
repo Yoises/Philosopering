@@ -49,6 +49,7 @@ const ChatRoom = ({ philosopher, onBack }: ChatRoomProps) => {
     { role: "assistant", content: "⚠️ I couldn't respond right now." },
   ]);
 }
+}; 
 
   return (
     <div className="flex flex-col h-screen bg-[#fdfaf6] relative">
@@ -105,5 +106,5 @@ const ChatRoom = ({ philosopher, onBack }: ChatRoomProps) => {
     </div>
   );
 };
-console.log("ENV key:", import.meta.env.VITE_OPENAI_API_KEY);
+
 export default ChatRoom;

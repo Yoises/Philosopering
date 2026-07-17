@@ -7,6 +7,4 @@ export default defineConfig({
   plugins: [
     tailwindcss(),
     react()],
-  base: '/Philosopering/',
 })
-//elemento nuevo//
