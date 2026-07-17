@@ -5,28 +5,46 @@ export default async function handler(req: any, res: any) {
 
   const { philosopher, messages } = req.body;
 
+  if (!process.env.GEMINI_API_KEY) {
+    return res.status(500).json({ error: "Falta GEMINI_API_KEY" });
+  }
+
   try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: `You are ${philosopher}, speaking with the tone, vocabulary, and reasoning typical of their philosophy.`,
+    const geminiMessages = messages.map((m: any) => ({
+      role: m.role === "assistant" ? "model" : "user",
+      parts: [{ text: m.content }],
+    }));
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          systemInstruction: {
+            parts: [
+              {
+                text: `You are ${philosopher}, speaking with the tone, vocabulary, and reasoning typical of their philosophy.`,
+              },
+            ],
           },
-          ...messages,
-        ],
-      }),
-    });
+          contents: geminiMessages,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error("Gemini error:", errText);
+      return res.status(500).json({ error: "Gemini API error" });
+    }
 
     const data = await response.json();
-    return res.status(200).json(data);
+    const aiMessage = data.candidates?.[0]?.content?.parts?.[0]?.text || "…";
+
+    return res.status(200).json({ choices: [{ message: { content: aiMessage } }] });
   } catch (error) {
-    return res.status(500).json({ error: "Failed to reach OpenAI" });
+    console.error(error);
+    return res.status(500).json({ error: "Failed to reach Gemini" });
   }
 }
